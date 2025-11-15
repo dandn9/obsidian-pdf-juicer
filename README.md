@@ -1,0 +1,2 @@
+- Adds bookmarks on a PDF document
+- Adds grab tool, being able to scroll with your mouse without wheel
