@@ -1,0 +1,11 @@
+{
+	"id": "pdf-juicer",
+	"name": "pdf-juicer",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Enhancements for PDF files in Obsidian.",
+	"author": "Daniel L",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}
