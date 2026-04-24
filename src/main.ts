@@ -88,6 +88,21 @@ export default class MyPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "go-back-from-pdf-link",
+      name: "Go Back from PDF Internal Link",
+      checkCallback: (checking: boolean) => {
+        const view = this.app.workspace.getActiveViewOfType(FileView);
+        if (view?.getViewType() === "pdf" && this.hasPdfLinkBack(view)) {
+          if (!checking) {
+            this.goBackFromPdfLink(view);
+          }
+          return true;
+        }
+        return false;
+      },
+    });
+
     this.pdfEvents.on(
       ADD_BOOKMARK_EVENT,
       async (fileName: string, pageNumber: number, element: HTMLElement) => {
@@ -179,6 +194,11 @@ export default class MyPlugin extends Plugin {
       },
       true
     );
+    viewerContainer.addEventListener(
+      "contextmenu",
+      (event) => this.handleRightClickBack(view, event),
+      true
+    );
     pageInput?.addEventListener("input", () => this.handlePdfPageChange(view));
     pageInput?.addEventListener("change", () => this.handlePdfPageChange(view));
   }
@@ -223,16 +243,29 @@ export default class MyPlugin extends Plugin {
     );
   }
 
-  private goBackFromPdfLink(view: FileView) {
+  private hasPdfLinkBack(view: FileView): boolean {
+    return this.getPdfNavigationState(view).stack.length > 0;
+  }
+
+  private goBackFromPdfLink(view: FileView): boolean {
     const state = this.getPdfNavigationState(view);
     const entry = state.stack.pop();
-    if (!entry) return;
+    if (!entry) return false;
 
     state.pendingLink = undefined;
     this.clearRestoreTimeouts(state);
     state.returningToPage = entry.originLocation.page;
     this.gotoPage(view, entry.originLocation.page);
     this.schedulePdfViewLocationRestore(view, entry.originLocation);
+    return true;
+  }
+
+  private handleRightClickBack(view: FileView, event: MouseEvent) {
+    if (!this.hasPdfLinkBack(view)) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    this.goBackFromPdfLink(view);
   }
 
   private getPdfViewLocation(
